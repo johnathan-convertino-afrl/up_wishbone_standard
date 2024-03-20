@@ -70,6 +70,7 @@ module up_wishbone_classic #(
 
   wire  [ADDRESS_WIDTH-1:0] s_next_address;
   wire                      valid;
+  wire                      up_ack;
 
   reg   [ADDRESS_WIDTH-1:0] r_address;
   reg                       r_req;
@@ -93,7 +94,8 @@ module up_wishbone_classic #(
   assign up_waddr = ( s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr : r_address) : 0);
 
   //ack is ack for both, or them so either may pass
-  assign s_wb_ack = (up_rack | up_wack);
+  assign up_ack = (up_rack | up_wack);
+  assign s_wb_ack = up_ack;
 
   //part select isn't supported by the uP interface. Needs to be added outside the core to the device if needed.
   generate
@@ -123,7 +125,7 @@ module up_wishbone_classic #(
       case(s_wb_cti)
         CTI_CLASSIC:
         begin
-          r_req <= valid & !up_rack;
+          r_req <= valid & !up_ack;
         end
         CTI_CONST_BURST:
         begin
@@ -135,7 +137,7 @@ module up_wishbone_classic #(
         end
         CTI_END_OF_BURST:
         begin
-          r_req <= valid & !up_rack;
+          r_req <= valid & !up_ack;
         end
         default:
         begin

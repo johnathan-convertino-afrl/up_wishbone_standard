@@ -65,6 +65,8 @@ module tb_wishbone_slave #(
   wire [15:0] up_waddr;
   wire [15:0] up_raddr;
   wire [31:0] up_wdata;
+  wire  tb_rack;
+  wire  tb_wack;
   
   //1ns
   localparam CLK_PERIOD = 20;
@@ -99,12 +101,12 @@ module tb_wishbone_slave #(
     //uP
     //read interface
     .up_rreq(up_rreq),
-    .up_rack(r_up_rack),
+    .up_rack(tb_rack),
     .up_raddr(up_raddr),
     .up_rdata(r_up_rdata),
     //write interface
     .up_wreq(up_wreq),
-    .up_wack(r_up_wack),
+    .up_wack(tb_wack),
     .up_waddr(up_waddr),
     .up_wdata(up_wdata)
   );
@@ -145,7 +147,7 @@ module tb_wishbone_slave #(
       r_wb_addr <= 0;
       r_wb_data_o <= 'hAAAA0000;
       r_wb_sel_o <= ~0;
-      r_wb_cti <= 3'b010;
+      r_wb_cti <= 3'b000;
     end else begin
       r_wb_we <= 1'b0;
       r_wb_cyc <= 1'b0;
@@ -156,33 +158,36 @@ module tb_wishbone_slave #(
       begin
         r_wb_cyc <= 1'b1;
         r_wb_stb <= 1'b1;
-        r_wb_we  <= 1'b1;
+        r_wb_we  <= 1'b0;
 
         if(tb_wb_ack == 1'b1)
         begin
-          if(r_wb_data_o == 'hAAAA000E)
-          begin
-            r_wb_cti <= 3'b111;
+          // if(r_wb_data_o == 'hAAAA000E)
+          // begin
+            r_wb_cti <= 3'b000;
             // r_wb_we <= 1'b0;
             // r_wb_cyc <= 1'b0;
             // r_wb_stb <= 1'b0;
-          end
-          // r_wb_addr <= r_wb_addr + 'h4;
+          // end
+          r_wb_addr <= r_wb_addr + 'h4;
 
           r_wb_data_o <= r_wb_data_o + 'h1;
         end
-      end else if(r_wb_data_o == 'hAAAA000F)
-      begin
-        r_wb_cyc <= 1'b1;
-        r_wb_stb <= 1'b1;
-        r_wb_we  <= 1'b1;
-
-        r_wb_addr <= 'hC;
-        if(tb_wb_ack == 1'b1)
-          r_wb_data_o <= r_wb_data_o + 'h1;
+      // end else if(r_wb_data_o == 'hAAAA000F)
+      // begin
+      //   r_wb_cyc <= 1'b1;
+      //   r_wb_stb <= 1'b1;
+      //   r_wb_we  <= 1'b1;
+      //
+      //   r_wb_addr <= 'hC;
+      //   if(tb_wb_ack == 1'b1)
+      //     r_wb_data_o <= r_wb_data_o + 'h1;
       end
     end
   end
+
+  assign tb_rack = r_up_rack & up_rreq;
+  assign tb_wack = r_up_wack & up_wreq;
 
   //up registers decoder
   always @(posedge tb_data_clk)
