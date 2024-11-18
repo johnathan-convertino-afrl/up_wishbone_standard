@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("s_n",["Variable"],[["s_next_address",,[["up_wishbone_classic",,,,0,"File:up_wishbone_classic.v:up_wishbone_classic.s_next_address","SystemVerilogModule:up_wishbone_classic:s_next_address"]]]]);

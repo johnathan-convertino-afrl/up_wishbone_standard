@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("bri",["Information"],[["Brief",,[[,,,,0,"File:up_wishbone_classic.v:Brief"]]]]);

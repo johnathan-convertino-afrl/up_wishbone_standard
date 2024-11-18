@@ -1,0 +1,253 @@
+\begin{titlepage}
+  \begin{center}
+
+  {\Huge UP\_WISHBONE\_CLASSIC}
+
+  \vspace{25mm}
+
+  \includegraphics[width=0.90\textwidth,height=\textheight,keepaspectratio]{img/AFRL.png}
+
+  \vspace{25mm}
+
+  \today
+
+  \vspace{15mm}
+
+  {\Large Jay Convertino}
+
+  \end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\section{Usage}
+
+\subsection{Introduction}
+
+\par
+This core converts the Wishbone Classic bus to the uP bus. This allows any core with a uP bus to be interfaced with a Wishbone Classic bus. Combination of combinatorial logic and synchronous logic.
+
+\subsection{Dependencies}
+
+\par
+The following are the dependencies of the cores.
+
+\begin{itemize}
+  \item fusesoc 2.X
+  \item iverilog (simulation)
+  \item cocotb (simulation)
+\end{itemize}
+
+\input{src/fusesoc/depend_fusesoc_info.tex}
+
+\subsection{In a Project}
+\par
+This core is made to interface Wishbone Classic bus to uP based device cores. This is part of a family of converters based on Analog Devices uP specification. Using this allows usage of Analog Devices AXI Lite core, AFRL APB3, AFRL Wishbone Classic, and AFRL Wishbone Pipeline converters. Meaning any uP core can be easily customized to any bus quickly. These are made for relativly slow speed bus device interfaces. An example of a Verilog uP interface provided below.
+
+\begin{lstlisting}[language=Verilog]
+  //output signals assigned to registers.
+  assign up_rack  = r_up_rack & up_rreq;
+  assign up_wack  = r_up_wack & up_wreq;
+  assign up_rdata = r_up_rdata;
+  assign irq      = r_irq;
+
+  assign s_rx_ren = ((up_raddr[3:0] == RX_FIFO_REG) && up_rreq ? r_up_rack & r_rx_ren : 0);
+
+  //up registers decoder
+  always @(posedge clk)
+  begin
+    if(rstn == 1'b0)
+    begin
+      r_up_rack   <= 1'b0;
+      r_up_wack   <= 1'b0;
+      r_up_rdata  <= 0;
+
+      r_rx_ren    <= 1'b0;
+
+      r_overflow  <= 1'b0;
+
+      r_control_reg <= 0;
+    end else begin
+      r_up_rack   <= 1'b0;
+      r_up_wack   <= 1'b0;
+      r_tx_wen    <= 1'b0;
+      r_rx_ren    <= 1'b0;
+      r_up_rdata  <= r_up_rdata;
+      //clear reset bits
+      r_control_reg[RESET_RX_BIT] <= 1'b0;
+      r_control_reg[RESET_TX_BIT] <= 1'b0;
+
+      if(rx_full == 1'b1)
+      begin
+        r_overflow <= 1'b1;
+      end
+
+      //read request
+      if(up_rreq == 1'b1)
+      begin
+        r_up_rack <= 1'b1;
+
+        case(up_raddr[3:0])
+          RX_FIFO_REG: begin
+            r_up_rdata <= rx_rdata & {{(BUS_WIDTH*8-DATA_BITS){1'b0}}, {DATA_BITS{1'b1}}};
+            r_rx_ren <= 1'b1;
+          end
+          STATUS_REG: begin
+            r_up_rdata <= {{(BUS_WIDTH*8-8){1'b0}}, s_parity_err, s_frame_err, r_overflow, r_irq_en, tx_full, tx_empty, rx_full, rx_valid};
+            r_overflow <= 1'b0;
+          end
+          default:begin
+            r_up_rdata <= 0;
+          end
+        endcase
+      end
+
+      //write request
+      if(up_wreq == 1'b1)
+      begin
+        r_up_wack <= 1'b1;
+
+        //only allow write once ack (Analog Devices does the same)
+        if(r_up_wack == 1'b1) begin
+          case(up_waddr[3:0])
+            TX_FIFO_REG: begin
+              r_tx_wdata  <= up_wdata;
+              r_tx_wen    <= 1'b1;
+            end
+            CONTROL_REG: begin
+              r_control_reg <= up_wdata;
+            end
+            default:begin
+            end
+          endcase
+        end
+      end
+    end
+  end
+
+  //up control register processing and fifo reset
+  always @(posedge clk)
+  begin
+    if(rstn == 1'b0)
+    begin
+      r_rstn_rx_delay <= ~0;
+      r_rstn_tx_delay <= ~0;
+      r_irq_en <= 1'b0;
+    end else begin
+      r_rstn_rx_delay <= {1'b1, r_rstn_rx_delay[FIFO_DEPTH-1:1]};
+      r_rstn_tx_delay <= {1'b1, r_rstn_rx_delay[FIFO_DEPTH-1:1]};
+
+      if(r_control_reg[RESET_RX_BIT])
+      begin
+        r_rstn_rx_delay <= {FIFO_DEPTH{1'b0}};
+      end
+
+      if(r_control_reg[RESET_TX_BIT])
+      begin
+        r_rstn_tx_delay <= {FIFO_DEPTH{1'b0}};
+      end
+
+      if(r_control_reg[ENABLE_INTR_BIT] != r_irq_en)
+        r_irq_en <= r_control_reg[ENABLE_INTR_BIT];
+      end
+    end
+  end
+\end{lstlisting}
+
+\section{Architecture}
+\par
+The only module is the up\_wishbone\_classic module. It is listed below.
+
+\begin{itemize}
+  \item \textbf{up\_wishbone\_classic} Convert Wishbone Classic to the Analog Devices uP BUS. (see core for documentation).
+\end{itemize}
+
+\par
+This core has two generate blocks, and two always blocks. They are listed below.
+
+generate:
+\begin{enumerate}
+\item Part Select Write generates uP signals that have the non-selected elements blanked out with zeros.
+\item Part Select Read generates Wishbone classic signals that have non-selected elements blanked out with zeros.
+\end{enumerate}
+
+always:
+\begin{itemize}
+\item Burst State Control
+  \begin{enumerate}
+    \item Based on Wishbone Classic CTI state, change request logic.
+    \item If CTI burst does not match a configuration, no request is allowed.
+    \item Check the address state, if we are currently requesting burst mode then change to self incrementing address.
+    \item If we hit the last in burst mode, switch out of it.
+  \end{enumerate}
+\item Reset Hold, holds reset for 8 more clock cycles to comply with Wishbone Standard.
+\end{itemize}
+
+Please see \ref{Module Documentation} for more information.
+
+\section{Building}
+
+\par
+The Wishbone Classic core is written in Verilog 2001. They should synthesize in any modern FPGA software. The core comes as a fusesoc packaged core and can be
+included in any other core. Be sure to make sure you have meet the dependencies listed in the previous section.
+
+\subsection{fusesoc}
+\par
+Fusesoc is a system for building FPGA software without relying on the internal project management of the tool. Avoiding vendor lock in to Vivado or Quartus.
+These cores, when included in a project, can be easily integrated and targets created based upon the end developer needs. The core by itself is not a part of
+a system and should be integrated into a fusesoc based system. Simulations are setup to use fusesoc and are a part of its targets.
+
+\subsection{Source Files}
+
+\input{src/fusesoc/files_fusesoc_info.tex}
+
+\subsection{Targets}
+
+\input{src/fusesoc/targets_fusesoc_info.tex}
+
+\subsection{Directory Guide}
+
+\par
+Below highlights important folders from the root of the directory.
+
+\begin{enumerate}
+  \item \textbf{docs} Contains all documentation related to this project.
+    \begin{itemize}
+      \item \textbf{manual} Contains user manual and github page that are generated from the latex sources.
+      \item \textbf{specs} Contains specifications for the bus.
+    \end{itemize}
+  \item \textbf{src} Contains source files for the core
+  \item \textbf{tb} Contains test bench files for iverilog and cocotb
+    \begin{itemize}
+      \item \textbf{cocotb} testbench files
+    \end{itemize}
+\end{enumerate}
+
+\newpage
+
+\section{Simulation}
+\par
+There are a few different simulations that can be run for this core.
+
+\subsection{iverilog}
+\par
+iverilog is used for simple test benches for quick verification, visually, of the core.
+
+\subsection{cocotb}
+\par
+Future simulations will use cocotb. This feature is not yet implemented.
+
+\newpage
+
+\section{Module Documentation} \label{Module Documentation}
+
+\par
+There is a single async module for this core.
+
+\begin{itemize}
+\item \textbf{up\_wishbone\_classic} Wishbone Classic to uP converter\\
+\end{itemize}
+The next sections document the module in great detail.
+

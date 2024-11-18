@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("mit",["Information"],[["MIT",,[[,"License MIT",,,0,"File:up_wishbone_classic.v:License_MIT"]]]]);
