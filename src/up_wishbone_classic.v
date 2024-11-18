@@ -40,8 +40,8 @@
  *
  * Parameters:
  *
- *   ADDRESS_WIDTH   - Width of the APB3 address port in bits.
- *   BUS_WIDTH       - Width of the APB3 bus data port in bytes.
+ *   ADDRESS_WIDTH   - Width of the Wishbone address port in bits.
+ *   BUS_WIDTH       - Width of the Wishbone bus data port in bytes.
  *
  * Ports:
  *
