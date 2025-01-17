@@ -72,33 +72,34 @@ module up_wishbone_classic #(
     parameter BUS_WIDTH     = 4
   ) 
   (
-    input                       clk,
-    input                       rst,
-    input                       s_wb_cyc,
-    input                       s_wb_stb,
-    input                       s_wb_we,
-    input   [ADDRESS_WIDTH-1:0] s_wb_addr,
-    input   [BUS_WIDTH*8-1:0]   s_wb_data_i,
-    input   [BUS_WIDTH-1:0]     s_wb_sel,
-    input   [ 1:0]              s_wb_bte,
-    input   [ 2:0]              s_wb_cti,
-    output                      s_wb_ack,
-    output  [31:0]              s_wb_data_o,
-    output                      s_wb_err,
-    output                      up_rreq,
-    input                       up_rack,
-    output  [ADDRESS_WIDTH-1:0] up_raddr,
-    input   [BUS_WIDTH*8-1:0]   up_rdata,
-    output                      up_wreq,
-    input                       up_wack,
-    output  [ADDRESS_WIDTH-1:0] up_waddr,
-    output  [BUS_WIDTH*8-1:0]   up_wdata
+    input                                           clk,
+    input                                           rst,
+    input                                           s_wb_cyc,
+    input                                           s_wb_stb,
+    input                                           s_wb_we,
+    input   [ADDRESS_WIDTH-1:0]                     s_wb_addr,
+    input   [BUS_WIDTH*8-1:0]                       s_wb_data_i,
+    input   [BUS_WIDTH-1:0]                         s_wb_sel,
+    input   [ 1:0]                                  s_wb_bte,
+    input   [ 2:0]                                  s_wb_cti,
+    output                                          s_wb_ack,
+    output  [BUS_WIDTH*8-1:0]                       s_wb_data_o,
+    output                                          s_wb_err,
+    output                                          up_rreq,
+    input                                           up_rack,
+    output  [ADDRESS_WIDTH-(ADDRESS_WIDTH/16)-1:0]  up_raddr,
+    input   [BUS_WIDTH*8-1:0]                       up_rdata,
+    output                                          up_wreq,
+    input                                           up_wack,
+    output  [ADDRESS_WIDTH-(ADDRESS_WIDTH/16)-1:0]  up_waddr,
+    output  [BUS_WIDTH*8-1:0]                       up_wdata
   );
 
   `include "wb_common.v"
 
   localparam init_address  = 1'd0;
   localparam inc_address   = 1'd1;
+  localparam shift         = ADDRESS_WIDTH/16;
 
   genvar index;
 
@@ -134,11 +135,11 @@ module up_wishbone_classic #(
 
   // var: up_raddr
   // assign address to read address port if selected
-  assign up_raddr = (~s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr : s_next_address) : 0);
+  assign up_raddr = (~s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr[ADDRESS_WIDTH-1:shift]: s_next_address[ADDRESS_WIDTH-shift-1:0]) : 0);
 
   // var: up_waddr
   // assign address to write address port if selected
-  assign up_waddr = ( s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr : r_address) : 0);
+  assign up_waddr = ( s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr[ADDRESS_WIDTH-1:shift] : r_address[ADDRESS_WIDTH-1:shift]) : 0);
 
   // var: up_ack
   // ack is ack for both, or them so either may pass
@@ -214,7 +215,7 @@ module up_wishbone_classic #(
         end
         inc_address:
         begin
-          r_address <= s_next_address;
+          r_address <= s_next_address << shift;
 
           if(wb_is_last(s_wb_cti))
           begin

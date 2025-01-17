@@ -62,8 +62,8 @@ module tb_wishbone_slave #(
 
   wire up_rreq;
   wire up_wreq;
-  wire [15:0] up_waddr;
-  wire [15:0] up_raddr;
+  wire [13:0] up_waddr;
+  wire [13:0] up_raddr;
   wire [31:0] up_wdata;
   wire  tb_rack;
   wire  tb_wack;
@@ -76,8 +76,8 @@ module tb_wishbone_slave #(
   //register address decoding
   localparam RX_FIFO_REG = 14'h0;
   localparam ADDRESS_REG = 14'h0;
-  localparam STATUS_REG  = 14'h8;
-  localparam CONTROL_REG = 14'hC;
+  localparam STATUS_REG  = 14'h2;
+  localparam CONTROL_REG = 14'h3;
 
   //device under test
   up_wishbone_classic #(
@@ -169,7 +169,7 @@ module tb_wishbone_slave #(
             // r_wb_cyc <= 1'b0;
             // r_wb_stb <= 1'b0;
           // end
-          r_wb_addr <= r_wb_addr + 'h4;
+          r_wb_addr <= r_wb_addr + 'h2;
 
           r_wb_data_o <= r_wb_data_o + 'h1;
         end
