@@ -1,0 +1,1 @@
+﻿NDSummary.OnToolTipsLoaded("SystemVerilogModule:tb_wishbone_slave",{54:"<div class=\"NDToolTip TModule LSystemVerilog\"><div id=\"NDPrototype54\" class=\"NDPrototype\"><div class=\"PSection PPlainSection\"><span class=\"SHKeyword\">module</span> tb_wishbone_slave ()</div></div><div class=\"TTSummary\">Test bench for apb3 slave. simple write and then read.</div></div>"});

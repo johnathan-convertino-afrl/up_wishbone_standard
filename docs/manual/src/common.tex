@@ -237,17 +237,39 @@ iverilog is used for simple test benches for quick verification, visually, of th
 
 \subsection{cocotb}
 \par
-Future simulations will use cocotb. This feature is not yet implemented.
+To use the cocotb tests you must install the following python libraries.
+\begin{lstlisting}[language=bash]
+  $ pip install cocotb
+  $ pip install cocotbext-up
+  $ pip install cocotbext-wishbone
+\end{lstlisting}
+
+Each module has a cocotb based simulation. These use the cocotb extensions Wishbone and uP. To install
+these locally use the following.cocotb
+\begin{lstlisting}[language=bash]
+  $ pip install --break-system-packages -e .
+\end{lstlisting}
+
+\begin{itemize}
+  \item \textbf{sim\_cocotb} Standard simulation Wishbone to uP conversion using cocotbexts.
+\end{itemize}
+
+Then you must use the cocotb sim target. The targets above can be run with various parameters.
+\begin{lstlisting}[language=bash]
+  $ fusesoc run --target sim_cocotb AFRL:bus:up_wishbone:1.0.0
+\end{lstlisting}
 
 \newpage
 
 \section{Module Documentation} \label{Module Documentation}
 
 \par
-There is a single async module for this core.
 
 \begin{itemize}
-\item \textbf{up\_wishbone\_classic} Wishbone Classic to uP converter\\
+\item \textbf{up\_apb3} Wishbone to uP converter\\
+\item \textbf{tb\_apb3-v} Verilog test bench\\
+\item \textbf{tb\_cocotb-py} Cocotb python test routines\\
+\item \textbf{tb\_cocotb-v} Cocotb verilog test bench\\
 \end{itemize}
-The next sections document the module in great detail.
+The next sections document the module in detail.
 

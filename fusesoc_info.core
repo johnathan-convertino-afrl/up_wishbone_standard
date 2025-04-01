@@ -13,6 +13,11 @@ filesets:
     files:
       - tb/tb_wishbone_slave.v
     file_type: verilogSource
+
+  tb_cocotb:
+    files:
+      - tb/tb_cocotb.py : {file_type : user, copyto : .}
+      - tb/tb_cocotb.v : { file_type: verilogSource }
     
   dep:
     depend:
@@ -29,3 +34,31 @@ targets:
     default_tool: icarus
     filesets_append: [tb]
     toplevel: tb_wishbone_slave
+
+  sim_cocotb:
+    <<: *default
+    description: Cocotb unit tests
+    flow: sim
+    flow_options:
+      tool: icarus
+      cocotb_module: tb_cocotb
+      timescale: 1ns/1ns
+      vcs_options: [-timescale=1ns/1ns]
+    filesets_append: [tb_cocotb]
+    toplevel: tb_cocotb
+    parameters:
+      - ADDRESS_WIDTH
+      - BUS_WIDTH
+
+parameters:
+  ADDRESS_WIDTH:
+    datatype    : int
+    default     : 32
+    description : number of bits for address bus
+    paramtype   : vlogparam
+
+  BUS_WIDTH:
+    datatype    : int
+    default     : 4
+    description : number of bytes for data bus
+    paramtype   : vlogparam

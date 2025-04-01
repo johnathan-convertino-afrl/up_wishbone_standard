@@ -1,37 +1,45 @@
 //******************************************************************************
-/// @file    tb_wishbone_slave.v
-/// @author  JAY CONVERTINO
-/// @date    2021.06.23
-/// @brief   SIMPLE TEST BENCH
-///
-/// @LICENSE MIT
-///  Copyright 2021 Jay Convertino
-///
-///  Permission is hereby granted, free of charge, to any person obtaining a copy
-///  of this software and associated documentation files (the "Software"), to 
-///  deal in the Software without restriction, including without limitation the
-///  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
-///  sell copies of the Software, and to permit persons to whom the Software is 
-///  furnished to do so, subject to the following conditions:
-///
-///  The above copyright notice and this permission notice shall be included in 
-///  all copies or substantial portions of the Software.
-///
-///  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-///  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-///  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-///  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-///  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-///  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-///  IN THE SOFTWARE.
+// file:    tb_wishbone_slave.v
+//
+// author:  JAY CONVERTINO
+//
+// date:    2021/06/23
+//
+// about:   Brief
+// Test bench for wishbone classic slave
+//
+// license: License MIT
+// Copyright 2021 Jay Convertino
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+//
 //******************************************************************************
 
 `timescale 1 ns/10 ps
 
-module tb_wishbone_slave #(
-  parameter IN_FILE_NAME = "in.bin",
-  parameter OUT_FILE_NAME = "out.bin",
-  parameter RAND_READY = 0);
+/*
+ * Module: tb_wishbone_slave
+ *
+ * Test bench for apb3 slave. simple write and then read.
+ *
+ */
+module tb_wishbone_slave ();
   
   reg         tb_data_clk = 0;
   reg         tb_rst = 0;
@@ -78,15 +86,19 @@ module tb_wishbone_slave #(
   localparam STATUS_REG  = 14'h2;
   localparam CONTROL_REG = 14'h3;
 
-  //device under test
+  //Group: Instantiated Modules
+
+  /*
+   * Module: dut
+   *
+   * Device under test, up_wishbone_classic to uP
+   */
   up_wishbone_classic #(
     .ADDRESS_WIDTH(16),
     .BUS_WIDTH(4)
   ) dut (
-    //clk reset
     .clk(tb_data_clk),
     .rst(tb_rst),
-    //Wishbone
     .s_wb_cyc(r_wb_cyc),
     .s_wb_stb(r_wb_stb),
     .s_wb_we(r_wb_we),
@@ -95,13 +107,10 @@ module tb_wishbone_slave #(
     .s_wb_sel(4'b0000),
     .s_wb_ack(tb_wb_ack),
     .s_wb_data_o(tb_wb_data_i),
-    //uP
-    //read interface
     .up_rreq(up_rreq),
     .up_rack(tb_rack),
     .up_raddr(up_raddr),
     .up_rdata(r_up_rdata),
-    //write interface
     .up_wreq(up_wreq),
     .up_wack(tb_wack),
     .up_waddr(up_waddr),
