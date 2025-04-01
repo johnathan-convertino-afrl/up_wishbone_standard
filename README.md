@@ -1,5 +1,5 @@
-# WISHBONE CLASSIC SLAVE
-### Wishbone Classic Slave B4 to Analog Devices uP interface
+# WISHBONE STANDARD SLAVE
+### Wishbone Classic Standard Slave B4 to Analog Devices uP interface
 
 ![image](docs/manual/img/AFRL.png)
 
@@ -9,7 +9,7 @@
    
    date: 2024.02.19
    
-   details: Interface analog devices uP interface devices to Wishbone Classic bus B4 no burst modes.
+   details: Interface analog devices uP interface devices to Wishbone Classic Standard bus B4 no burst modes.
    
    license: MIT   
    
@@ -25,8 +25,8 @@
 ### DOCUMENTATION
   For detailed usage information, please navigate to one of the following sources. They are the same, just in a different format.
 
-  - [up_wishbone_classic.pdf](docs/manual/up_wishbone_classic.pdf)
-  - [github page](https://johnathan-convertino-afrl.github.io/up_wishbone_classic/)
+  - [up_wishbone_standard.pdf](docs/manual/up_wishbone_standard.pdf)
+  - [github page](https://johnathan-convertino-afrl.github.io/up_wishbone_standard/)
 
 ### PARAMETERS
 
@@ -36,11 +36,13 @@
 ### COMPONENTS
 #### SRC
 
-* wishbone_slave.v
+* up_wishbone_standard.v
   
 #### TB
 
 * tb_wishbone_slave.v
+* tb_cocotb.v
+* tb_cocotb.py
   
 ### FUSESOC
 
@@ -52,3 +54,4 @@
 * RUN WITH: (fusesoc run --target=sim VENDER:CORE:NAME:VERSION)
   - default (for IP integration builds)
   - sim
+  - sim_cocotb

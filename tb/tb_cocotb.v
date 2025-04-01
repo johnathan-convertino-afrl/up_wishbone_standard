@@ -105,9 +105,9 @@ module tb_cocotb #(
   /*
    * Module: dut
    *
-   * Device under test, up_wishbone_classic
+   * Device under test, up_wishbone_standard
    */
-  up_wishbone_classic #(
+  up_wishbone_standard #(
     .ADDRESS_WIDTH(ADDRESS_WIDTH),
     .BUS_WIDTH(BUS_WIDTH)
   ) dut (

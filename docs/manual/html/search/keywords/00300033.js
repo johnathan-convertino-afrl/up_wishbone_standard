@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("03",["Date"],[["03",,[[,"2024/03/01",,,0,"File:up_wishbone_classic.v:2024/03/01"],[,"2025/03/04",,,0,"File2:tb_cocotb.py:2025/03/04"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("03",["Date"],[["03",,[[,"2024/03/01",,,0,"File:up_wishbone_standard.v:2024/03/01"],[,"2025/03/04",,,0,"File2:tb_cocotb.py:2025/03/04"]]]]);

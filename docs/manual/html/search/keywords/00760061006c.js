@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("val",["Variable"],[["valid",,[["up_wishbone_classic",,,,0,"File:up_wishbone_classic.v:up_wishbone_classic.valid","SystemVerilogModule:up_wishbone_classic:valid"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("val",["Variable"],[["valid",,[["up_wishbone_standard",,,,0,"File:up_wishbone_standard.v:up_wishbone_standard.valid","SystemVerilogModule:up_wishbone_standard:valid"]]]]);

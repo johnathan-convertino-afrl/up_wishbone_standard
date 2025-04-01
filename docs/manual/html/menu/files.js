@@ -1,1 +1,1 @@
-﻿NDMenu.OnSectionLoaded("files.js",[[2,"up_wishbone_classic","File:",[[1,"up_wishbone_classic.v"]]],[2,"up_wishbone_classic_tb","File2:",[[1,"tb_cocotb.py"],[1,"tb_cocotb.v"],[1,"tb_wishbone_slave.v"]]]]);
+﻿NDMenu.OnSectionLoaded("files.js",[[2,"up_wishbone_standard","File:",[[1,"up_wishbone_standard.v"]]],[2,"up_wishbone_standard_tb","File2:",[[1,"tb_cocotb.py"],[1,"tb_cocotb.v"],[1,"tb_wishbone_slave.v"]]]]);

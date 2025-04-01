@@ -1,1 +1,1 @@
-﻿NDMenu.OnSectionLoaded("modules.js",[[1,"dut"],[1,"tb_cocotb"],[1,"tb_wishbone_slave"],[1,"up_wishbone_classic"]]);
+﻿NDMenu.OnSectionLoaded("modules.js",[[1,"dut"],[1,"tb_cocotb"],[1,"tb_wishbone_slave"],[1,"up_wishbone_standard"]]);

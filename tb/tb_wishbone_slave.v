@@ -91,9 +91,9 @@ module tb_wishbone_slave ();
   /*
    * Module: dut
    *
-   * Device under test, up_wishbone_classic to uP
+   * Device under test, up_wishbone_standard to uP
    */
-  up_wishbone_classic #(
+  up_wishbone_standard #(
     .ADDRESS_WIDTH(16),
     .BUS_WIDTH(4)
   ) dut (

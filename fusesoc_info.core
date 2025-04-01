@@ -1,12 +1,12 @@
 CAPI=2:
 
-name: AFRL:bus:up_wishbone_classic:1.0.0
+name: AFRL:bus:up_wishbone_standard:1.0.0
 description: Wishbone slave to Analog Devices uP interface
 
 filesets:
   src:
     files:
-      - src/up_wishbone_classic.v
+      - src/up_wishbone_standard.v
     file_type: verilogSource
   
   tb:

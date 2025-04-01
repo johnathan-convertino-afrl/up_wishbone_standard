@@ -1,1 +1,1 @@
-﻿NDSearch.OnPrefixDataLoaded("v",["File"],[["v",,[[,"tb_cocotb.v",,,0,"File2:tb_cocotb.v:tb_cocotb.v"],[,"tb_wishbone_slave.v",,,0,"File2:tb_wishbone_slave.v:tb_wishbone_slave.v"],[,"up_wishbone_classic.v",,,0,"File:up_wishbone_classic.v:up_wishbone_classic.v"]]]]);
+﻿NDSearch.OnPrefixDataLoaded("v",["File"],[["v",,[[,"tb_cocotb.v",,,0,"File2:tb_cocotb.v:tb_cocotb.v"],[,"tb_wishbone_slave.v",,,0,"File2:tb_wishbone_slave.v:tb_wishbone_slave.v"],[,"up_wishbone_classic.v",,,0,"File:up_wishbone_standard.v:up_wishbone_classic.v"]]]]);

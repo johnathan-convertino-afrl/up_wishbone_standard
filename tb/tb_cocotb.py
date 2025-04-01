@@ -39,7 +39,7 @@ from cocotb.clock import Clock
 from cocotb.utils import get_sim_time
 from cocotb.triggers import FallingEdge, RisingEdge, Timer, Event
 from cocotb.binary import BinaryValue
-from cocotbext.wishbone.classic import wishboneClassicMaster
+from cocotbext.wishbone.standard import wishboneStandardMaster
 from cocotbext.up.ad import upEchoSlave
 
 # Function: random_bool
@@ -80,7 +80,7 @@ async def increment_test(dut):
 
     start_clock(dut)
 
-    wishbone_classic_master = wishboneClassicMaster(dut, "s_wb", dut.clk, dut.rst)
+    wb_std_master = wishboneStandardMaster(dut, "s_wb", dut.clk, dut.rst)
 
     up_echo_slave = upEchoSlave(dut, "up", dut.clk, dut.rstn)
 
@@ -88,11 +88,11 @@ async def increment_test(dut):
 
     for x in range(0, 2**8):
 
-        await wishbone_classic_master.write(x, x)
+        await wb_std_master.write(x, x)
 
         await RisingEdge(dut.clk)
 
-        rx_data = await wishbone_classic_master.read(x)
+        rx_data = await wb_std_master.read(x)
 
         assert rx_data == x, "WRITTEN DATA DOES NOT EQUAL READ."
 
@@ -109,7 +109,7 @@ async def increment_test_stream(dut):
 
     start_clock(dut)
 
-    wishbone_classic_master = wishboneClassicMaster(dut, "s_wb", dut.clk, dut.rst)
+    wb_std_master = wishboneStandardMaster(dut, "s_wb", dut.clk, dut.rst)
 
     up_echo_slave = upEchoSlave(dut, "up", dut.clk, dut.rst)
 
@@ -117,10 +117,10 @@ async def increment_test_stream(dut):
 
     for x in range(0, 2**8, dut.BUS_WIDTH.value):
 
-        await wishbone_classic_master.write(x, x)
+        await wb_std_master.write(x, x)
 
     for x in range(0, 2**8, dut.BUS_WIDTH.value):
-        rx_data = await wishbone_classic_master.read(x)
+        rx_data = await wb_std_master.read(x)
 
         assert rx_data == x, "WRITTEN DATA DOES NOT EQUAL READ."
 

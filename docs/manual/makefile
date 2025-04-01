@@ -1,4 +1,4 @@
-PROJECT_NAME := up_wishbone_classic
+PROJECT_NAME := up_wishbone_standard
 
 MK_DIR := makefiles
 

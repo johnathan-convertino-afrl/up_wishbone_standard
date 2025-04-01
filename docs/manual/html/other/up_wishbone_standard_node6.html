@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+
+<!--Converted with LaTeX2HTML 2024 (Released January 1, 2024) -->
+<HTML lang="en">
+<HEAD>
+<TITLE>In a Project</TITLE>
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2024">
+
+<LINK REL="STYLESHEET" HREF="html.css">
+
+<LINK REL="previous" HREF="up_wishbone_standard_node4.html">
+<LINK REL="next" HREF="up_wishbone_standard_node7.html">
+</HEAD>
+
+<BODY >
+
+<DIV CLASS="navigation"><!--Navigation Panel-->
+<A
+ HREF="up_wishbone_standard_node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALT="next" SRC="next.png"></A> 
+<A
+ HREF="up_wishbone_standard_node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALT="up" SRC="up.png"></A> 
+<A
+ HREF="up_wishbone_standard_node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALT="previous" SRC="prev.png"></A> 
+<A ID="tex2html57"
+  HREF="up_wishbone_standard_node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALT="contents" SRC="contents.png"></A>  
+<BR>
+<B> Next:</B> <A
+ HREF="up_wishbone_standard_node7.html">Architecture</A>
+<B> Up:</B> <A
+ HREF="up_wishbone_standard_node2.html">Usage</A>
+<B> Previous:</B> <A
+ HREF="up_wishbone_standard_node5.html">fusesoc_info Depenecies</A>
+ &nbsp; <B>  <A ID="tex2html58"
+  HREF="up_wishbone_standard_node1.html">Contents</A></B> 
+<BR>
+<BR></DIV>
+<!--End of Navigation Panel-->
+
+<H2><A ID="SECTION00023000000000000000">
+In a Project</A>
+</H2>
+
+<P>
+This core is made to interface Wishbone Standard bus to uP based device cores. This is part of a family of converters based on Analog Devices uP specification. Using this allows usage of Analog Devices AXI Lite core, AFRL APB3, AFRL Wishbone Standard, and AFRL Wishbone Pipeline converters. Meaning any uP core can be easily customized to any bus quickly. These are made for relativly slow speed bus device interfaces. An example of a Verilog uP interface provided below.
+
+<P>
+<TABLE FRAME="VOID" CELLPADDING="4"><TR><TD>
+<PRE>
+  //output signals assigned to registers.
+  assign up_rack  = r_up_rack &amp; up_rreq;
+  assign up_wack  = r_up_wack &amp; up_wreq;
+  assign up_rdata = r_up_rdata;
+  assign irq      = r_irq;
+
+  assign s_rx_ren = ((up_raddr[3:0] == RX_FIFO_REG) &amp;&amp; up_rreq ? r_up_rack &amp; r_rx_ren : 0);
+
+  //up registers decoder
+  always @(posedge clk)
+  begin
+    if(rstn == 1'b0)
+    begin
+      r_up_rack   &lt;= 1'b0;
+      r_up_wack   &lt;= 1'b0;
+      r_up_rdata  &lt;= 0;
+
+      r_rx_ren    &lt;= 1'b0;
+
+      r_overflow  &lt;= 1'b0;
+
+      r_control_reg &lt;= 0;
+    end else begin
+      r_up_rack   &lt;= 1'b0;
+      r_up_wack   &lt;= 1'b0;
+      r_tx_wen    &lt;= 1'b0;
+      r_rx_ren    &lt;= 1'b0;
+      r_up_rdata  &lt;= r_up_rdata;
+      //clear reset bits
+      r_control_reg[RESET_RX_BIT] &lt;= 1'b0;
+      r_control_reg[RESET_TX_BIT] &lt;= 1'b0;
+
+      if(rx_full == 1'b1)
+      begin
+        r_overflow &lt;= 1'b1;
+      end
+
+      //read request
+      if(up_rreq == 1'b1)
+      begin
+        r_up_rack &lt;= 1'b1;
+
+        case(up_raddr[3:0])
+          RX_FIFO_REG: begin
+            r_up_rdata &lt;= rx_rdata &amp; {{(BUS_WIDTH*8-DATA_BITS){1'b0}}, {DATA_BITS{1'b1}}};
+            r_rx_ren &lt;= 1'b1;
+          end
+          STATUS_REG: begin
+            r_up_rdata &lt;= {{(BUS_WIDTH*8-8){1'b0}}, s_parity_err, s_frame_err, r_overflow, r_irq_en, tx_full, tx_empty, rx_full, rx_valid};
+            r_overflow &lt;= 1'b0;
+          end
+          default:begin
+            r_up_rdata &lt;= 0;
+          end
+        endcase
+      end
+
+      //write request
+      if(up_wreq == 1'b1)
+      begin
+        r_up_wack &lt;= 1'b1;
+
+        //only allow write once ack (Analog Devices does the same)
+        if(r_up_wack == 1'b1) begin
+          case(up_waddr[3:0])
+            TX_FIFO_REG: begin
+              r_tx_wdata  &lt;= up_wdata;
+              r_tx_wen    &lt;= 1'b1;
+            end
+            CONTROL_REG: begin
+              r_control_reg &lt;= up_wdata;
+            end
+            default:begin
+            end
+          endcase
+        end
+      end
+    end
+  end
+
+  //up control register processing and fifo reset
+  always @(posedge clk)
+  begin
+    if(rstn == 1'b0)Classic
+    begin
+      r_rstn_rx_delay &lt;= ~0;
+      r_rstn_tx_delay &lt;= ~0;
+      r_irq_en &lt;= 1'b0;
+    end else begin
+      r_rstn_rx_delay &lt;= {1'b1, r_rstn_rx_delay[FIFO_DEPTH-1:1]};
+      r_rstn_tx_delay &lt;= {1'b1, r_rstn_rx_delay[FIFO_DEPTH-1:1]};
+
+      if(r_control_reg[RESET_RX_BIT])
+      begin
+        r_rstn_rx_delay &lt;= {FIFO_DEPTH{1'b0}};
+      end
+
+      if(r_control_reg[RESET_TX_BIT])
+      begin
+        r_rstn_tx_delay &lt;= {FIFO_DEPTH{1'b0}};
+      end
+
+      if(r_control_reg[ENABLE_INTR_BIT] != r_irq_en)
+        r_irq_en &lt;= r_control_reg[ENABLE_INTR_BIT];
+      end
+    end
+  end
+</PRE>
+</TD></TR></TABLE>
+
+<P>
+<BR><HR>
+
+</BODY>
+</HTML>
