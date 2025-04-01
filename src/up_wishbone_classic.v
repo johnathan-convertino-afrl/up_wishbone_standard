@@ -87,39 +87,31 @@ module up_wishbone_classic #(
     output                                          s_wb_err,
     output                                          up_rreq,
     input                                           up_rack,
-    output  [ADDRESS_WIDTH-(ADDRESS_WIDTH/16)-1:0]  up_raddr,
+    output  [ADDRESS_WIDTH-(BUS_WIDTH/2)-1:0]       up_raddr,
     input   [BUS_WIDTH*8-1:0]                       up_rdata,
     output                                          up_wreq,
     input                                           up_wack,
-    output  [ADDRESS_WIDTH-(ADDRESS_WIDTH/16)-1:0]  up_waddr,
+    output  [ADDRESS_WIDTH-(BUS_WIDTH/2)-1:0]       up_waddr,
     output  [BUS_WIDTH*8-1:0]                       up_wdata
   );
 
   `include "wb_common.v"
 
-  localparam init_address  = 1'd0;
-  localparam inc_address   = 1'd1;
-  localparam shift         = ADDRESS_WIDTH/16;
+  localparam shift = BUS_WIDTH/2;
 
   genvar index;
 
-  wire  [ADDRESS_WIDTH-1:0] s_next_address;
-  wire                      valid;
-  wire                      up_ack;
+  wire          valid;
+  wire          up_ack;
 
-  reg   [ADDRESS_WIDTH-1:0] r_address;
-  reg                       r_req;
-  reg   [ 7:0]              r_rst;
-  reg                       address_state;
-  reg   [ 2:0]              r_wb_cti;
-
-  // var: s_next_address
-  // Use the fusesoc wb_next_adr function to generate a address when wishbone classic is in a burst mode.
-  assign s_next_address = wb_next_adr(r_address, r_wb_cti & s_wb_cti, s_wb_bte, BUS_WIDTH * 8);
+  reg [ADDRESS_WIDTH-1:0] r_wb_addr;
+  reg                     r_req;
+  reg                     r_err;
+  reg [ 7:0]              r_rst;
 
   // var: valid
   // Indicate valid request from wishbone.
-  assign valid = s_wb_cyc & s_wb_stb & ~r_rst[0];
+  assign valid = s_wb_cyc & s_wb_stb & ~r_rst[0] & ~r_err;
 
   // var: up_rreq
   // Convert wishbone read requests to up requests
@@ -130,16 +122,16 @@ module up_wishbone_classic #(
   assign up_wreq  =  s_wb_we & r_req;
 
   // var: s_wb_err
-  // TODO:check for burst address errors
-  assign s_wb_err =  1'b0;
+  // check for burst address errors
+  assign s_wb_err =  r_err;
 
   // var: up_raddr
   // assign address to read address port if selected
-  assign up_raddr = (~s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr[ADDRESS_WIDTH-1:shift]: s_next_address[ADDRESS_WIDTH-shift-1:0]) : 0);
+  assign up_raddr = (~s_wb_we & ~r_rst[0] ? s_wb_addr[ADDRESS_WIDTH-1:shift] : 0);
 
   // var: up_waddr
   // assign address to write address port if selected
-  assign up_waddr = ( s_wb_we & ~r_rst[0] ? (address_state == init_address ? s_wb_addr[ADDRESS_WIDTH-1:shift] : r_address[ADDRESS_WIDTH-1:shift]) : 0);
+  assign up_waddr = ( s_wb_we & ~r_rst[0] ? s_wb_addr[ADDRESS_WIDTH-1:shift] : 0);
 
   // var: up_ack
   // ack is ack for both, or them so either may pass
@@ -171,12 +163,12 @@ module up_wishbone_classic #(
   always @(posedge clk)
   begin
     if(r_rst[0]) begin
-      r_address     <= {ADDRESS_WIDTH{1'b0}};
-      r_req         <= 1'b0;
-      r_wb_cti      <= 0;
-      address_state <= init_address;
+      r_req <= 1'b0;
+      r_err <= 1'b0;
+      r_wb_addr <= 0;
     end else begin
-      address_state <= address_state;
+      r_err     <= 1'b0;
+      r_wb_addr <= s_wb_addr;
 
       case(s_wb_cti)
         CTI_CLASSIC:
@@ -186,10 +178,20 @@ module up_wishbone_classic #(
         CTI_CONST_BURST:
         begin
           r_req <= valid;
+
+          if((r_wb_addr != s_wb_addr) && r_req)
+          begin
+            r_err <= 1'b1;
+          end
         end
         CTI_INC_BURST:
         begin
           r_req <= valid;
+
+          if((s_wb_addr != wb_next_adr(r_wb_addr, s_wb_cti, s_wb_bte, BUS_WIDTH * 8)) && r_req)
+          begin
+            r_err <= 1'b1;
+          end
         end
         CTI_END_OF_BURST:
         begin
@@ -198,30 +200,7 @@ module up_wishbone_classic #(
         default:
         begin
           r_req <= 1'b0;
-        end
-      endcase
-
-      r_wb_cti <= s_wb_cti;
-
-      case(address_state)
-        init_address:
-        begin
-          r_address <= s_wb_addr;
-
-          if((s_wb_cti == CTI_INC_BURST) & r_req)
-          begin
-            address_state <= inc_address;
-          end
-        end
-        inc_address:
-        begin
-          r_address <= s_next_address << shift;
-
-          if(wb_is_last(s_wb_cti))
-          begin
-            r_address <= s_wb_addr;
-            address_state <= init_address;
-          end
+          r_err <= 1'b1;
         end
       endcase
     end

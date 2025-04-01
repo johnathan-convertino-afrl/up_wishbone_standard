@@ -37,36 +37,35 @@ module tb_wishbone_slave #(
   reg         tb_rst = 0;
 
   //up registers
-  reg                       r_up_rack;
-  reg  [31:0]               r_up_rdata;
-  reg                       r_up_wack;
+  reg         r_up_rack;
+  reg  [31:0] r_up_rdata;
+  reg         r_up_wack;
 
   //control register
-  reg  [31:0]               r_control_reg;
-  reg  [31:0]               r_address_reg;
+  reg  [31:0] r_control_reg;
+  reg  [31:0] r_address_reg;
 
   //wishbone registers
-  reg r_wb_cyc;
-  reg r_wb_stb;
-  reg r_wb_we;
-  reg [15:0] r_wb_addr;
-  reg [31:0] r_wb_data_o;
-  reg [3:0]  r_wb_sel_o;
-  reg [2:0]  r_wb_cti;
+  reg         r_wb_cyc;
+  reg         r_wb_stb;
+  reg         r_wb_we;
+  reg [15:0]  r_wb_addr;
+  reg [31:0]  r_wb_data_o;
+  reg [3:0]   r_wb_sel_o;
 
   //wires
-  wire tb_wb_ack;
+  wire        tb_wb_ack;
   wire [31:0] tb_wb_data_i;
 
   wire        tb_uart_loop;
 
-  wire up_rreq;
-  wire up_wreq;
+  wire        up_rreq;
+  wire        up_wreq;
   wire [13:0] up_waddr;
   wire [13:0] up_raddr;
   wire [31:0] up_wdata;
-  wire  tb_rack;
-  wire  tb_wack;
+  wire        tb_rack;
+  wire        tb_wack;
   
   //1ns
   localparam CLK_PERIOD = 20;
@@ -93,9 +92,9 @@ module tb_wishbone_slave #(
     .s_wb_we(r_wb_we),
     .s_wb_addr(r_wb_addr),
     .s_wb_data_i(r_wb_data_o),
-    .s_wb_sel(r_wb_sel_o),
-    .s_wb_cti(r_wb_cti),
+    .s_wb_cti(3'b000),
     .s_wb_bte(2'b00),
+    .s_wb_sel(4'b0000),
     .s_wb_ack(tb_wb_ack),
     .s_wb_data_o(tb_wb_data_i),
     //uP
@@ -136,7 +135,7 @@ module tb_wishbone_slave #(
     $dumpvars(0,tb_wishbone_slave);
   end
 
-    //up registers decoder
+  // wishbone write in classic only
   always @(posedge tb_data_clk)
   begin
     if(tb_rst)
@@ -147,41 +146,39 @@ module tb_wishbone_slave #(
       r_wb_addr <= 0;
       r_wb_data_o <= 'hAAAA0000;
       r_wb_sel_o <= ~0;
-      r_wb_cti <= 3'b000;
     end else begin
-      r_wb_we <= 1'b0;
+      r_wb_we  <= 1'b0;
       r_wb_cyc <= 1'b0;
       r_wb_stb <= 1'b0;
       r_wb_sel_o <= r_wb_sel_o;
 
       if(r_wb_data_o < 'hAAAA000F)
       begin
+        r_wb_we  <= 1'b1;
         r_wb_cyc <= 1'b1;
         r_wb_stb <= 1'b1;
-        r_wb_we  <= 1'b0;
 
-        if(tb_wb_ack == 1'b1)
+        if(tb_wb_ack)
         begin
-          // if(r_wb_data_o == 'hAAAA000E)
-          // begin
-            r_wb_cti <= 3'b000;
-            // r_wb_we <= 1'b0;
-            // r_wb_cyc <= 1'b0;
-            // r_wb_stb <= 1'b0;
-          // end
-          r_wb_addr <= r_wb_addr + 'h2;
-
-          r_wb_data_o <= r_wb_data_o + 'h1;
+          r_wb_addr   <= r_wb_addr + 4;
+          r_wb_data_o <= r_wb_data_o + 2;
         end
-      // end else if(r_wb_data_o == 'hAAAA000F)
-      // begin
-      //   r_wb_cyc <= 1'b1;
-      //   r_wb_stb <= 1'b1;
-      //   r_wb_we  <= 1'b1;
-      //
-      //   r_wb_addr <= 'hC;
-      //   if(tb_wb_ack == 1'b1)
-      //     r_wb_data_o <= r_wb_data_o + 'h1;
+      end else begin
+        r_wb_we  <= 1'b0;
+        r_wb_cyc <= 1'b1;
+        r_wb_stb <= 1'b1;
+
+        if(tb_wb_ack)
+        begin
+          r_wb_addr <= r_wb_addr - 4;
+
+          if(r_wb_addr == 0)
+          begin
+            r_wb_addr <= r_wb_addr;
+            #RST_PERIOD
+            $finish;
+          end
+        end
       end
     end
   end
