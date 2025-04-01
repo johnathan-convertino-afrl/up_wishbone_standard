@@ -92,8 +92,6 @@ module tb_wishbone_slave #(
     .s_wb_we(r_wb_we),
     .s_wb_addr(r_wb_addr),
     .s_wb_data_i(r_wb_data_o),
-    .s_wb_cti(3'b000),
-    .s_wb_bte(2'b00),
     .s_wb_sel(4'b0000),
     .s_wb_ack(tb_wb_ack),
     .s_wb_data_o(tb_wb_data_i),

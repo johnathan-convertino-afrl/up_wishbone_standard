@@ -1,5 +1,5 @@
 # WISHBONE CLASSIC SLAVE
-### Wishbone slave to Analog Devices uP interface
+### Wishbone Classic Slave B4 to Analog Devices uP interface
 
 ![image](docs/manual/img/AFRL.png)
 
@@ -9,7 +9,7 @@
    
    date: 2024.02.19
    
-   details: Interface analog devices uP interface devices to Wishbone Classic bus
+   details: Interface analog devices uP interface devices to Wishbone Classic bus B4 no burst modes.
    
    license: MIT   
    
@@ -27,15 +27,6 @@
 
   - [up_wishbone_classic.pdf](docs/manual/up_wishbone_classic.pdf)
   - [github page](https://johnathan-convertino-afrl.github.io/up_wishbone_classic/)
-
-### DEPENDENCIES
-#### Build
-
-  - AFRL:utility:helper:1.0.0
-  
-#### Simulation
-
-  - AFRL:simulation:axis_stimulator
 
 ### PARAMETERS
 

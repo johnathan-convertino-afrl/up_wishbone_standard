@@ -53,8 +53,6 @@
  *   s_wb_addr        - Bus address
  *   s_wb_data_i      - Input data
  *   s_wb_sel         - Device Select
- *   s_wb_bte         - Burst Type Extension
- *   s_wb_cti         - Cycle Type
  *   s_wb_ack         - Bus transaction terminated
  *   s_wb_data_o      - Output data
  *   s_wb_err         - Active high when a bus error is present
@@ -80,8 +78,6 @@ module up_wishbone_classic #(
     input   [ADDRESS_WIDTH-1:0]                     s_wb_addr,
     input   [BUS_WIDTH*8-1:0]                       s_wb_data_i,
     input   [BUS_WIDTH-1:0]                         s_wb_sel,
-    input   [ 1:0]                                  s_wb_bte,
-    input   [ 2:0]                                  s_wb_cti,
     output                                          s_wb_ack,
     output  [BUS_WIDTH*8-1:0]                       s_wb_data_o,
     output                                          s_wb_err,
@@ -95,8 +91,6 @@ module up_wishbone_classic #(
     output  [BUS_WIDTH*8-1:0]                       up_wdata
   );
 
-  `include "wb_common.v"
-
   localparam shift = BUS_WIDTH/2;
 
   genvar index;
@@ -104,14 +98,13 @@ module up_wishbone_classic #(
   wire          valid;
   wire          up_ack;
 
-  reg [ADDRESS_WIDTH-1:0] r_wb_addr;
-  reg                     r_req;
-  reg                     r_err;
-  reg [ 7:0]              r_rst;
+  reg         r_req;
+  reg         r_err;
+  reg [ 7:0]  r_rst;
 
   // var: valid
   // Indicate valid request from wishbone.
-  assign valid = s_wb_cyc & s_wb_stb & ~r_rst[0] & ~r_err;
+  assign valid = s_wb_cyc & s_wb_stb & ~r_rst[0];
 
   // var: up_rreq
   // Convert wishbone read requests to up requests
@@ -122,7 +115,7 @@ module up_wishbone_classic #(
   assign up_wreq  =  s_wb_we & r_req;
 
   // var: s_wb_err
-  // check for burst address errors
+  // check for errors
   assign s_wb_err =  r_err;
 
   // var: up_raddr
@@ -165,44 +158,9 @@ module up_wishbone_classic #(
     if(r_rst[0]) begin
       r_req <= 1'b0;
       r_err <= 1'b0;
-      r_wb_addr <= 0;
     end else begin
-      r_err     <= 1'b0;
-      r_wb_addr <= s_wb_addr;
-
-      case(s_wb_cti)
-        CTI_CLASSIC:
-        begin
-          r_req <= valid & !up_ack;
-        end
-        CTI_CONST_BURST:
-        begin
-          r_req <= valid;
-
-          if((r_wb_addr != s_wb_addr) && r_req)
-          begin
-            r_err <= 1'b1;
-          end
-        end
-        CTI_INC_BURST:
-        begin
-          r_req <= valid;
-
-          if((s_wb_addr != wb_next_adr(r_wb_addr, s_wb_cti, s_wb_bte, BUS_WIDTH * 8)) && r_req)
-          begin
-            r_err <= 1'b1;
-          end
-        end
-        CTI_END_OF_BURST:
-        begin
-          r_req <= valid & !up_ack;
-        end
-        default:
-        begin
-          r_req <= 1'b0;
-          r_err <= 1'b1;
-        end
-      endcase
+      r_err <= 1'b0;
+      r_req <= valid & !up_ack;
     end
   end
 
