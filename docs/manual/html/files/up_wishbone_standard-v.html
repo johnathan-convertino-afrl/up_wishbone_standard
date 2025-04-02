@@ -60,15 +60,15 @@
  <div class="CBody"><p>Indicate valid request from wishbone.</p></div>
 </div>
 
-<a name="up_wishbone_standard.up_rreq"></a><a name="Topic28"></a><div class="CTopic TVariable LSystemVerilog">
+<a name="up_wishbone_standard.up_rreq"></a><a name="Topic57"></a><div class="CTopic TVariable LSystemVerilog">
  <div class="CTitle">up_rreq</div>
- <div id="NDPrototype28" class="NDPrototype"><div class="PSection PPlainSection"><span class="SHKeyword">assign</span> up_rreq = ~s_wb_we &amp; r_req</div></div>
+ <div id="NDPrototype57" class="NDPrototype"><div class="PSection PPlainSection"><span class="SHKeyword">assign</span> up_rreq = ~s_wb_we &amp; valid &amp; r_req</div></div>
  <div class="CBody"><p>Convert wishbone read requests to up requests</p></div>
 </div>
 
-<a name="up_wishbone_standard.up_wreq"></a><a name="Topic29"></a><div class="CTopic TVariable LSystemVerilog">
+<a name="up_wishbone_standard.up_wreq"></a><a name="Topic58"></a><div class="CTopic TVariable LSystemVerilog">
  <div class="CTitle">up_wreq</div>
- <div id="NDPrototype29" class="NDPrototype"><div class="PSection PPlainSection"><span class="SHKeyword">assign</span> up_wreq = s_wb_we &amp; r_req</div></div>
+ <div id="NDPrototype58" class="NDPrototype"><div class="PSection PPlainSection"><span class="SHKeyword">assign</span> up_wreq = s_wb_we &amp; valid &amp; r_req</div></div>
  <div class="CBody"><p>Convert wishbone write requests to up requests</p></div>
 </div>
 
