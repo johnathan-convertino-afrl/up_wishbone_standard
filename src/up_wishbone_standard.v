@@ -108,11 +108,11 @@ module up_wishbone_standard #(
 
   // var: up_rreq
   // Convert wishbone read requests to up requests
-  assign up_rreq  = ~s_wb_we & r_req;
+  assign up_rreq  = ~s_wb_we & valid & r_req;
 
   // var: up_wreq
   // Convert wishbone write requests to up requests
-  assign up_wreq  =  s_wb_we & r_req;
+  assign up_wreq  =  s_wb_we & valid & r_req;
 
   // var: s_wb_err
   // check for errors
@@ -156,11 +156,15 @@ module up_wishbone_standard #(
   always @(posedge clk)
   begin
     if(r_rst[0]) begin
-      r_req <= 1'b0;
+      r_req <= 1'b1;
       r_err <= 1'b0;
     end else begin
       r_err <= 1'b0;
-      r_req <= valid & !up_ack;
+      r_req <= 1'b1;
+      if(valid == 1'b1)
+      begin
+        r_req <= up_ack;
+      end
     end
   end
 

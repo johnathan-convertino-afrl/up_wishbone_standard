@@ -66,7 +66,7 @@ def start_clock(dut):
 # Cocotb coroutine for resets, used with await to make sure system is reset.
 async def reset_dut(dut):
   dut.rst.value = 1
-  await Timer(5, units="ns")
+  await Timer(20, units="ns")
   dut.rst.value = 0
 
 # Function: increment test
@@ -115,14 +115,18 @@ async def increment_test_stream(dut):
 
     await reset_dut(dut)
 
-    for x in range(0, 2**8, dut.BUS_WIDTH.value):
-
-        await wb_std_master.write(x, x)
+    temp = []
 
     for x in range(0, 2**8, dut.BUS_WIDTH.value):
-        rx_data = await wb_std_master.read(x)
 
-        assert rx_data == x, "WRITTEN DATA DOES NOT EQUAL READ."
+      temp.append(x)
+
+    await wb_std_master.write(temp, temp)
+
+    rx_data = await wb_std_master.read(temp)
+
+    for x in rx_data:
+        assert temp.pop(0) == x.integer, "WRITTEN DATA DOES NOT EQUAL READ."
 
     await RisingEdge(dut.clk)
 
