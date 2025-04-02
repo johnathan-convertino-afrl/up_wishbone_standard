@@ -190,8 +190,8 @@ module tb_wishbone_slave ();
     end
   end
 
-  assign tb_rack = r_up_rack & up_rreq;
-  assign tb_wack = r_up_wack & up_wreq;
+  assign tb_rack = r_up_rack;
+  assign tb_wack = r_up_wack;
 
   //up registers decoder
   always @(posedge tb_data_clk)
@@ -209,9 +209,10 @@ module tb_wishbone_slave ();
       r_up_wack   <= 1'b0;
       r_up_rdata  <= r_up_rdata;
 
+      r_up_rack <= up_rreq;
+
       if(up_rreq == 1'b1)
       begin
-        r_up_rack <= 1'b1;
 
         case(up_raddr)
           RX_FIFO_REG: begin
@@ -227,23 +228,20 @@ module tb_wishbone_slave ();
         endcase
       end
 
+      r_up_wack <= up_wreq;
+
       if(up_wreq == 1'b1)
       begin
-        r_up_wack <= 1'b1;
-
-        if(r_up_wack == 1'b1)
-        begin
-          case(up_waddr)
-            ADDRESS_REG: begin
-              r_address_reg  <= up_wdata;
-            end
-            CONTROL_REG: begin
-              r_control_reg <= up_wdata;
-            end
-            default:begin
-            end
-          endcase
-        end
+        case(up_waddr)
+          ADDRESS_REG: begin
+            r_address_reg  <= up_wdata;
+          end
+          CONTROL_REG: begin
+            r_control_reg <= up_wdata;
+          end
+          default:begin
+          end
+        endcase
       end
     end
   end
