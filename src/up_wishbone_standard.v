@@ -138,7 +138,7 @@ module up_wishbone_standard #(
   //part select isn't supported by the uP interface. Needs to be added outside the core to the device if needed.
   generate
     for(index = 0; index < BUS_WIDTH; index = index + 1)
-    begin
+    begin : gen_WR_PART_SELECT
       assign up_wdata[((index+1)*8)-1:index*8] = ((~r_rst[0] | ~s_wb_sel[index]) ? s_wb_data_i[((index+1)*8)-1:index*8] : 0);
     end
   endgenerate
@@ -147,7 +147,7 @@ module up_wishbone_standard #(
   //part select isn't supported by the uP interface. Needs to be added outside the core to the device if needed.
   generate
     for(index = 0; index < BUS_WIDTH; index = index + 1)
-    begin
+    begin : gen_RD_PART_SELECT
       assign s_wb_data_o[((index+1)*8)-1:index*8] = ((~r_rst[0] | s_wb_sel[index]) ? up_rdata[((index+1)*8)-1:index*8] : 0);
     end
   endgenerate
