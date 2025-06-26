@@ -1,5 +1,6 @@
 # WISHBONE STANDARD SLAVE
 ### Wishbone Classic Standard Slave B4 to Analog Devices uP interface
+---
 
 ![image](docs/manual/img/AFRL.png)
 
